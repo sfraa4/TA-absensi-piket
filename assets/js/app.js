@@ -58,7 +58,9 @@ async function processAttendance(uid) {
     isProcessing = true;
     
     // Capture photo
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    context.save();
+    context.scale(-1, 1);
+    context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
     const imageData = canvas.toDataURL('image/jpeg', 0.8);
     
     try {

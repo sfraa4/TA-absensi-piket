@@ -30,7 +30,7 @@
                 <div class="glass-card p-4 text-center h-100 d-flex flex-column justify-content-center align-items-center relative">
                     <h6 class="mb-3 text-light-50">pastikan wajah terlihat jelas</h6>
                     <div class="video-container position-relative">
-                        <video id="video" width="100%" height="auto" autoplay playsinline class="rounded-4 shadow-lg border border-secondary border-opacity-25"></video>
+                        <video id="video" width="100%" height="100%" autoplay playsinline class="rounded-4 shadow-lg border border-secondary border-opacity-25"></video>
                         <canvas id="canvas" class="d-none"></canvas>
                         <div class="scanner-overlay">
                             <div class="scanner-line"></div>

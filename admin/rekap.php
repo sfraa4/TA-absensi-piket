@@ -1,7 +1,28 @@
 <?php
 require_once 'header.php';
 
-// Filter month
+if (isset($_GET['delete'])) {
+
+    $id = $_GET['delete'];
+
+    $stmt = $pdo->prepare("SELECT foto FROM absensi WHERE id = ?");
+    $stmt->execute([$id]);
+    $data = $stmt->fetch();
+
+    if ($data) {
+
+        if (file_exists("../" . $data['foto'])) {
+            unlink("../" . $data['foto']);
+        }
+
+        $delete = $pdo->prepare("DELETE FROM absensi WHERE id = ?");
+        $delete->execute([$id]);
+    }
+
+    header("Location: rekap.php");
+    exit;
+}
+
 $filter_month = $_GET['month'] ?? date('Y-m');
 
 $stmt = $pdo->prepare("
@@ -35,6 +56,7 @@ $attendances = $stmt->fetchAll();
                         <th>Tanggal</th>
                         <th>Jam Tapping</th>
                         <th>Bukti Foto</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,6 +73,13 @@ $attendances = $stmt->fetchAll();
                                 <i class="bi bi-image"></i> Lihat Foto
                             </button>
                         </td>
+                        <td>
+                            <a href="rekap.php?delete=<?= $row['id'] ?>" 
+                            class="btn btn-sm btn-danger"
+                            onclick="return confirm('Yakin hapus data ini?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -59,7 +88,7 @@ $attendances = $stmt->fetchAll();
     </div>
 </div>
 
-<!-- Modal Foto -->
+
 <div class="modal fade" id="photoModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
