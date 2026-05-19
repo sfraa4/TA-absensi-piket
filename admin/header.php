@@ -35,6 +35,9 @@ require_once '../config/database.php';
                             " href="rekap.php">Rekap absensi</a>
                     </li>
                 </ul>
+                <div class="me-3 text-light fw-medium d-none d-lg-flex align-items-center bg-white bg-opacity-10 px-3 py-1 rounded-pill">
+                    <i class="bi bi-clock me-2"></i> <span id="admin_clock">Memuat...</span>
+                </div>
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link text-danger fw-bold" href="logout.php"><i class="bi bi-box-arrow-right"></i> LogOut</a>

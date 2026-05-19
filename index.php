@@ -23,6 +23,7 @@
         </div>
     </nav>
 
+
     <div class="container flex-grow-1 d-flex align-items-center">
         <div class="row w-100 justify-content-center align-items-center g-4">
             
@@ -41,6 +42,14 @@
 
 
             <div class="col-lg-5">
+                <div class="mb-3 text-center">
+                    <div class="d-inline-block px-4 py-2 rounded-pill shadow-sm border border-secondary border-opacity-25 glass-card">
+                        <i class="bi bi-calendar-event text-primary me-2"></i>
+                        <span id="realtime_date" class="fw-medium text-light me-3" style="font-size: 0.9rem;">Memuat...</span>
+                        <i class="bi bi-clock text-primary me-2"></i>
+                        <span id="realtime_clock" class="fw-bold text-light" style="font-size: 0.9rem;">Memuat...</span>
+                    </div>
+                </div>
                 <div class="glass-card p-5 h-100 d-flex flex-column justify-content-center position-relative overflow-hidden text-center" id="data_container">
                     <div class="decor-circle circle-1"></div>
                     <div class="decor-circle circle-2"></div>
@@ -55,7 +64,7 @@
 
                     <div class="content-wrapper position-relative z-1 d-none" id="success_state">
                         <h3 class="fw-bold text-success mb-4"><i class="bi bi-check-circle-fill me-2"></i>Absensi Berhasil</h3>
-                        <div class="text-start fs-5">
+                        <div class="text-start fs-10">
                             <p class="mb-2"><span class="text-light-50">Hari:</span> <strong id="res_hari" class="text-light"></strong></p>
                             <p class="mb-2"><span class="text-light-50">Tanggal:</span> <strong id="res_tanggal" class="text-light"></strong></p>
                             <p class="mb-2"><span class="text-light-50">Nama:</span> <strong id="res_nama" class="text-light"></strong></p>

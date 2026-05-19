@@ -24,6 +24,37 @@ if (!$siswa) {
     exit;
 }
 
+$hari_array = [
+    'Monday' => 'Senin',
+    'Tuesday' => 'Selasa',
+    'Wednesday' => 'Rabu',
+    'Thursday' => 'Kamis',
+    'Friday' => 'Jumat',
+];
+
+$hari_inggris = date('l');
+$hari = $hari_array[$hari_inggris];
+$tanggal = date('Y-m-d');
+$jam = date('H:i:s');
+
+if (empty($siswa['hari_piket'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Jadwal piket Anda belum diatur oleh admin.']);
+    exit;
+}
+if ($siswa['hari_piket'] !== $hari) {
+    echo json_encode(['status' => 'error', 'message' => "Bukan jadwal Anda! Jadwal piket Anda hari {$siswa['hari_piket']}."]);
+    exit;
+}
+
+$stmt_check = $pdo->prepare("SELECT COUNT(*) FROM absensi WHERE nisn = ? AND tanggal = ?");
+$stmt_check->execute([$siswa['nisn'], $tanggal]);
+$tap_count = $stmt_check->fetchColumn();
+
+if ($tap_count >= 2) {
+    echo json_encode(['status' => 'error', 'message' => 'Batas maksimal tercapai! Anda sudah 2 kali absen hari ini.']);
+    exit;
+}
+
 $image_parts = explode(";base64,", $image_data);
 if (count($image_parts) != 2) {
     echo json_encode(['status' => 'error', 'message' => 'Format foto tidak valid.']);
@@ -42,20 +73,6 @@ $file_name = $siswa['nisn'] . '_' . time() . '.' . $image_type;
 $file_path = $upload_dir . $file_name;
 
 if (file_put_contents($file_path, $image_base64)) {
-    $hari_array = [
-        'Sunday' => 'Minggu',
-        'Monday' => 'Senin',
-        'Tuesday' => 'Selasa',
-        'Wednesday' => 'Rabu',
-        'Thursday' => 'Kamis',
-        'Friday' => 'Jumat',
-        'Saturday' => 'Sabtu'
-    ];
-    
-    $hari_inggris = date('l');
-    $hari = $hari_array[$hari_inggris];
-    $tanggal = date('Y-m-d');
-    $jam = date('H:i:s');
     
     $stmt = $pdo->prepare("INSERT INTO absensi (nisn, hari, tanggal, jam, foto) VALUES (?, ?, ?, ?, ?)");
     if ($stmt->execute([$siswa['nisn'], $hari, $tanggal, $jam, $file_path])) {

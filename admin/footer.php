@@ -8,6 +8,19 @@
     <script>
         $(document).ready(function() {
             $('.datatable').DataTable();
+            
+            function updateAdminClock() {
+                const clockEl = document.getElementById('admin_clock');
+                if(clockEl) {
+                    const now = new Date();
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    const minutes = now.getMinutes().toString().padStart(2, '0');
+                    const seconds = now.getSeconds().toString().padStart(2, '0');
+                    clockEl.textContent = `${hours}:${minutes}:${seconds} WIB`;
+                }
+            }
+            updateAdminClock();
+            setInterval(updateAdminClock, 1000);
         });
     </script>
 </body>

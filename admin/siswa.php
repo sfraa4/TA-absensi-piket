@@ -15,18 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nisn = $_POST['nisn'];
     $nama = $_POST['nama'];
     $kelas = $_POST['kelas'];
+    $hari_piket = $_POST['hari_piket'] ?? '';
     $rfid_uid = $_POST['rfid_uid'];
     $action = $_POST['action'];
     $old_nisn = $_POST['old_nisn'] ?? '';
 
     try {
         if ($action == 'add') {
-            $stmt = $pdo->prepare("INSERT INTO siswa (nisn, nama, kelas, rfid_uid) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nisn, $nama, $kelas, $rfid_uid]);
+            $stmt = $pdo->prepare("INSERT INTO siswa (nisn, nama, kelas, hari_piket, rfid_uid) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$nisn, $nama, $kelas, $hari_piket, $rfid_uid]);
             $_SESSION['msg'] = "Siswa berhasil ditambahkan!";
         } elseif ($action == 'edit') {
-            $stmt = $pdo->prepare("UPDATE siswa SET nisn=?, nama=?, kelas=?, rfid_uid=? WHERE nisn=?");
-            $stmt->execute([$nisn, $nama, $kelas, $rfid_uid, $old_nisn]);
+            $stmt = $pdo->prepare("UPDATE siswa SET nisn=?, nama=?, kelas=?, hari_piket=?, rfid_uid=? WHERE nisn=?");
+            $stmt->execute([$nisn, $nama, $kelas, $hari_piket, $rfid_uid, $old_nisn]);
             $_SESSION['msg'] = "Siswa berhasil diupdate!";
         }
     } catch (PDOException $e) {
@@ -68,6 +69,7 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
                         <th>NISN</th>
                         <th>Nama</th>
                         <th>Kelas</th>
+                        <th>Hari Piket</th>
                         <th>RFID UID</th>
                         <th>Aksi</th>
                     </tr>
@@ -78,9 +80,10 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
                         <td><?= htmlspecialchars($row['nisn']) ?></td>
                         <td><?= htmlspecialchars($row['nama']) ?></td>
                         <td><?= htmlspecialchars($row['kelas']) ?></td>
+                        <td><?= htmlspecialchars($row['hari_piket']) ?></td>
                         <td><code><?= htmlspecialchars($row['rfid_uid']) ?></code></td>
                         <td>
-                            <button class="btn btn-sm btn-warning text-white" onclick="editData('<?= $row['nisn'] ?>', '<?= addslashes($row['nama']) ?>', '<?= $row['kelas'] ?>', '<?= $row['rfid_uid'] ?>')">
+                            <button class="btn btn-sm btn-warning text-white" onclick="editData('<?= $row['nisn'] ?>', '<?= addslashes($row['nama']) ?>', '<?= $row['kelas'] ?>', '<?= htmlspecialchars($row['hari_piket']) ?>', '<?= $row['rfid_uid'] ?>')">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <a href="siswa.php?delete=<?= $row['nisn'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus data ini?')">
@@ -121,6 +124,17 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
                         <input type="text" name="kelas" id="formKelas" class="form-control" required>
                     </div>
                     <div class="mb-3">
+                        <label>Hari Piket</label>
+                        <select name="hari_piket" id="formHariPiket" class="form-select" required>
+                            <option value="">Pilih Hari</option>
+                            <option value="Senin">Senin</option>
+                            <option value="Selasa">Selasa</option>
+                            <option value="Rabu">Rabu</option>
+                            <option value="Kamis">Kamis</option>
+                            <option value="Jumat">Jumat</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label>RFID UID</label>
                         <div class="input-group">
                             <input type="text" name="rfid_uid" id="formRfid" class="form-control" required>
@@ -141,7 +155,7 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
 </div>
 
 <script>
-function editData(nisn, nama, kelas, rfid) {
+function editData(nisn, nama, kelas, hari_piket, rfid) {
     document.getElementById('modalTitle').innerText = 'Edit Data Siswa';
     document.getElementById('formAction').value = 'edit';
     document.getElementById('formOldNisn').value = nisn;
@@ -149,6 +163,7 @@ function editData(nisn, nama, kelas, rfid) {
     document.getElementById('formNisn').value = nisn;
     document.getElementById('formNama').value = nama;
     document.getElementById('formKelas').value = kelas;
+    document.getElementById('formHariPiket').value = hari_piket;
     document.getElementById('formRfid').value = rfid;
     
     var modal = new bootstrap.Modal(document.getElementById('modalForm'));
@@ -163,6 +178,7 @@ document.getElementById('modalAdd')?.addEventListener('click', function() {
     document.getElementById('formNisn').value = '';
     document.getElementById('formNama').value = '';
     document.getElementById('formKelas').value = '';
+    document.getElementById('formHariPiket').value = '';
     document.getElementById('formRfid').value = '';
     
     var modal = new bootstrap.Modal(document.getElementById('modalForm'));
