@@ -79,7 +79,6 @@
         </div>
     </div>
 
-    <!-- Hidden Input for RFID -->
     <input type="password" id="rfid_input" class="visually-hidden" autocomplete="off" autofocus>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

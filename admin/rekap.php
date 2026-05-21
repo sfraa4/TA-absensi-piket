@@ -97,6 +97,9 @@ $attendances = $stmt->fetchAll();
                 ?>
                 <option value="all" <?= $filter == 'all' ? 'selected' : '' ?>>Semua Waktu</option>
             </select>
+            <a href="export.php?filter=<?= $filter ?>&piket=<?= $filter_piket ?>" class="btn btn-sm btn-success text-white text-nowrap" onclick="return confirm('PENTING: Export ke Excel akan MENGHAPUS file foto fisik dari server untuk menghemat penyimpanan. Lanjutkan?')">
+                <i class="bi bi-file-earmark-excel"></i> Export
+            </a>
         </form>
     </div>
     <div class="card-body">
@@ -124,9 +127,13 @@ $attendances = $stmt->fetchAll();
                         <td><?= substr($row['hari'], 0, 3) ?>, <?= date('d/m/y', strtotime($row['tanggal'])) ?></td>
                         <td><span class="badge bg-success"><?= substr($row['jam'], 0, 5) ?></span></td>
                         <td>
-                            <button class="btn btn-sm btn-info text-white" onclick="showPhoto('../<?= $row['foto'] ?>', '<?= htmlspecialchars($row['nama']) ?>')">
-                                <i class="bi bi-image"></i> Lihat Foto
-                            </button>
+                            <?php if ($row['foto'] == 'archived'): ?>
+                                <span class="badge bg-secondary"><i class="bi bi-archive"></i> Diarsipkan ke Excel</span>
+                            <?php else: ?>
+                                <button class="btn btn-sm btn-info text-white" onclick="showPhoto('../<?= $row['foto'] ?>', '<?= htmlspecialchars($row['nama']) ?>')">
+                                    <i class="bi bi-image"></i> Lihat Foto
+                                </button>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <a href="rekap.php?delete=<?= $row['id'] ?>" 

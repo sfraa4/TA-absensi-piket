@@ -98,7 +98,6 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
     </div>
 </div>
 
-<!-- Modal Form -->
 <div class="modal fade" id="modalForm" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

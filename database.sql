@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS `admin` (
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insert default admin: admin@example.com / admin123
 INSERT INTO `admin` (`email`, `password`) VALUES ('admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi') ON DUPLICATE KEY UPDATE `email`=`email`;
 
 CREATE TABLE IF NOT EXISTS `siswa` (

@@ -135,12 +135,10 @@ function resetUI() {
     keepFocus();
 }
 
-// Setup Event Listeners
 document.addEventListener('click', keepFocus);
 window.addEventListener('blur', keepFocus);
 window.addEventListener('focus', keepFocus);
 
-// Init
 canvas.width = 400; // default capture size
 canvas.height = 300;
 initCamera();
