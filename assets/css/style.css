@@ -16,9 +16,9 @@ body {
     background: var(--box-color);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border-shdw);
+    border: 1px solid var(--teks2);
     border-radius: 24px;
-    box-shadow: 0 10px 55px -12px var(--border-shdw);
+    box-shadow: 0 10px 40px -12px var(--border-shdw);
 }
 
 .glass-navbar {
@@ -32,7 +32,7 @@ body {
     background: var(--transparan);
     backdrop-filter: blur(8px);
     border: 1px solid var(--transparan);
-    color: var(--border-shdw);
+    color: var(--teks2);
 }
 
 .text-gradient {
@@ -51,7 +51,7 @@ body {
     height: 300px    ;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 0 40px var(--transparan);
+    box-shadow: 0 0 40px var(--teks2);
 }
 
 video {
@@ -67,7 +67,7 @@ video {
     width: 100%;
     height: 100%;
     border-radius: 16px;
-    box-shadow: inset 0 0 0 2px var(--transparan);
+    box-shadow: inset 0 0 0 2px var(--teks1);
     z-index: 10;
     pointer-events: none;
 }

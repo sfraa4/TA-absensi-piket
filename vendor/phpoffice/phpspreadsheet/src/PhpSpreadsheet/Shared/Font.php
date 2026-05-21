@@ -11,7 +11,6 @@ use RecursiveIteratorIterator;
 
 class Font
 {
-    // Methods for resolving autosize value
     const AUTOSIZE_METHOD_APPROX = 'approx';
     const AUTOSIZE_METHOD_EXACT = 'exact';
 
@@ -20,7 +19,6 @@ class Font
         self::AUTOSIZE_METHOD_EXACT,
     ];
 
-    /** Character set codes used by BIFF5-8 in Font records */
     const CHARSET_ANSI_LATIN = 0x00;
     const CHARSET_SYSTEM_DEFAULT = 0x01;
     const CHARSET_SYMBOL = 0x02;
@@ -28,8 +26,8 @@ class Font
     const CHARSET_ANSI_JAPANESE_SHIFTJIS = 0x80;
     const CHARSET_ANSI_KOREAN_HANGUL = 0x81;
     const CHARSET_ANSI_KOREAN_JOHAB = 0x82;
-    const CHARSET_ANSI_CHINESE_SIMIPLIFIED = 0x86; //    gb2312
-    const CHARSET_ANSI_CHINESE_TRADITIONAL = 0x88; //    big5
+    const CHARSET_ANSI_CHINESE_SIMIPLIFIED = 0x86;
+    const CHARSET_ANSI_CHINESE_TRADITIONAL = 0x88;
     const CHARSET_ANSI_GREEK = 0xA1;
     const CHARSET_ANSI_TURKISH = 0xA2;
     const CHARSET_ANSI_VIETNAMESE = 0xA3;
@@ -41,8 +39,6 @@ class Font
     const CHARSET_ANSI_LATIN_II = 0xEE;
     const CHARSET_OEM_LATIN_I = 0xFF;
 
-    //  XXX: Constants created!
-    /** Font filenames */
     const ARIAL = 'arial.ttf';
     const ARIAL_BOLD = 'arialbd.ttf';
     const ARIAL_ITALIC = 'ariali.ttf';
@@ -205,7 +201,7 @@ class Font
     /**
      * Array that can be used to supplement FONT_FILE_NAMES for calculating exact width.
      *
-     * @var array<string, array<string, string>>
+     * @var array<string
      */
     private static array $extraFontArray = [];
 
@@ -221,22 +217,10 @@ class Font
         return self::$extraFontArray;
     }
 
-    /**
-     * AutoSize method.
-     */
     private static string $autoSizeMethod = self::AUTOSIZE_METHOD_APPROX;
 
-    /**
-     * Path to folder containing TrueType font .ttf files.
-     */
     private static string $trueTypeFontPath = '';
 
-    /**
-     * How wide is a default column for a given default font and size?
-     * Empirical data found by inspecting real Excel files and reading off the pixel width
-     * in Microsoft Office Excel 2007.
-     * Added height in points.
-     */
     public const DEFAULT_COLUMN_WIDTHS = [
         'Arial' => [
             1 => ['px' => 24, 'width' => 12.00000000, 'height' => 5.25],
@@ -295,9 +279,6 @@ class Font
         return true;
     }
 
-    /**
-     * Get autoSize method.
-     */
     public static function getAutoSizeMethod(): string
     {
         return self::$autoSizeMethod;
@@ -318,30 +299,18 @@ class Font
         self::$trueTypeFontPath = $folderPath;
     }
 
-    /**
-     * Get the path to the folder containing .ttf files.
-     */
     public static function getTrueTypeFontPath(): string
     {
         return self::$trueTypeFontPath;
     }
 
-    /**
-     * Pad amount for exact in pixels; use best guess if null.
-     */
     private static null|float|int $paddingAmountExact = null;
 
-    /**
-     * Set pad amount for exact in pixels; use best guess if null.
-     */
     public static function setPaddingAmountExact(null|float|int $paddingAmountExact): void
     {
         self::$paddingAmountExact = $paddingAmountExact;
     }
 
-    /**
-     * Get pad amount for exact in pixels; or null if using best guess.
-     */
     public static function getPaddingAmountExact(): null|float|int
     {
         return self::$paddingAmountExact;
@@ -364,12 +333,10 @@ class Font
         bool $filterAdjustment = false,
         int $indentAdjustment = 0
     ): float {
-        // If it is rich text, use plain text
         if ($cellText instanceof RichText) {
             $cellText = $cellText->getPlainText();
         }
 
-        // Special case if there are one or more newline characters ("\n")
         $cellText = (string) $cellText;
         if (str_contains($cellText, "\n")) {
             $lineTexts = explode("\n", $cellText);
@@ -378,10 +345,9 @@ class Font
                 $lineWidths[] = self::calculateColumnWidth($font, $lineText, $rotation = 0, $defaultFont, $filterAdjustment);
             }
 
-            return max($lineWidths); // width of longest line in cell
+            return max($lineWidths); 
         }
 
-        // Try to get the exact text width in pixels
         $approximate = self::$autoSizeMethod === self::AUTOSIZE_METHOD_APPROX;
         $columnWidth = 0;
         if (!$approximate) {
@@ -394,8 +360,6 @@ class Font
                     ) * 1.07
                 );
 
-                // Width of text in pixels excl. padding
-                // and addition because Excel adds some padding, just use approx width of 'n' glyph
                 $columnWidth = self::getTextWidthPixelsExact($cellText, $font, $rotation) + (self::$paddingAmountExact ?? $columnWidthAdjust);
             } catch (PhpSpreadsheetException) {
                 $approximate = true;
@@ -408,41 +372,30 @@ class Font
                 $font,
                 0
             );
-            // Width of text in pixels excl. padding, approximation
-            // and addition because Excel adds some padding, just use approx width of 'n' glyph
+          
             $columnWidth = self::getTextWidthPixelsApprox($cellText, $font, $rotation) + $columnWidthAdjust;
         }
 
-        // Convert from pixel width to column width
         $columnWidth = Drawing::pixelsToCellDimension((int) $columnWidth, $defaultFont ?? new FontStyle());
 
-        // Return
         return round($columnWidth, 4);
     }
 
-    /**
-     * Get GD text width in pixels for a string of text in a certain font at a certain rotation angle.
-     */
     public static function getTextWidthPixelsExact(string $text, FontStyle $font, int $rotation = 0): float
     {
-        // font size should really be supplied in pixels in GD2,
-        // but since GD2 seems to assume 72dpi, pixels and points are the same
+
         $fontFile = self::getTrueTypeFontFileFromFont($font);
         $textBox = imagettfbbox($font->getSize() ?? 10.0, $rotation, $fontFile, $text);
         if ($textBox === false) {
-            // @codeCoverageIgnoreStart
             throw new PhpSpreadsheetException('imagettfbbox failed');
-            // @codeCoverageIgnoreEnd
         }
 
-        // Get corners positions
         /** @var int[] $textBox */
         $lowerLeftCornerX = $textBox[0];
         $lowerRightCornerX = $textBox[2];
         $upperRightCornerX = $textBox[4];
         $upperLeftCornerX = $textBox[6];
 
-        // Consider the rotation when calculating the width
         return round(max($lowerRightCornerX - $upperLeftCornerX, $upperRightCornerX - $lowerLeftCornerX), 4);
     }
 
@@ -456,44 +409,33 @@ class Font
         $fontName = $font->getName();
         $fontSize = $font->getSize();
 
-        // Calculate column width in pixels.
-        // We assume fixed glyph width, but count double for "fullwidth" characters.
-        // Result varies with font name and size.
         switch ($fontName) {
             case 'Arial':
-                // value 8 was set because of experience in different exports at Arial 10 font.
                 $columnWidth = (int) (8 * StringHelper::countCharactersDbcs($columnText));
                 $columnWidth = $columnWidth * $fontSize / 10; // extrapolate from font size
 
                 break;
             case 'Verdana':
-                // value 8 was found via interpolation by inspecting real Excel files with Verdana 10 font.
                 $columnWidth = (int) (8 * StringHelper::countCharactersDbcs($columnText));
                 $columnWidth = $columnWidth * $fontSize / 10; // extrapolate from font size
 
                 break;
             default:
-                // just assume Calibri
-                // value 8.26 was found via interpolation by inspecting real Excel files with Calibri 11 font.
                 $columnWidth = (int) (8.26 * StringHelper::countCharactersDbcs($columnText));
-                $columnWidth = $columnWidth * $fontSize / 11; // extrapolate from font size
+                $columnWidth = $columnWidth * $fontSize / 11;
 
                 break;
         }
 
-        // Calculate approximate rotated column width
         if ($rotation !== 0) {
             if ($rotation == Alignment::TEXTROTATION_STACK_PHPSPREADSHEET) {
-                // stacked text
-                $columnWidth = 4; // approximation
+                $columnWidth = 4;
             } else {
-                // rotated text
                 $columnWidth = $columnWidth * cos(deg2rad($rotation))
-                                + $fontSize * abs(sin(deg2rad($rotation))) / 5; // approximation
+                                + $fontSize * abs(sin(deg2rad($rotation))) / 5; 
             }
         }
 
-        // pixel width is an integer
         return (int) $columnWidth;
     }
 
@@ -569,7 +511,6 @@ class Font
             $fontFile = self::findFontFile(self::$trueTypeFontPath, $fontFile) ?? self::$trueTypeFontPath . $separator . $fontFile;
         }
 
-        // Check if file actually exists
         if ($checkPath && !file_exists($fontFile) && !$fontFileAbsolute) {
             $alternateName = $name;
             if ($index !== 'x' && $fontArray[$name][$index] !== $fontArray[$name]['x']) {

@@ -25,7 +25,7 @@
 
 
     <div class="container flex-grow-1 d-flex align-items-center">
-        <div class="row w-100 justify-content-center align-items-center g-4">
+        <div class="row w-100 justify-content-center align-items-center gap-4 gap-lg-5">
             
             <div class="col-lg-5">
                 <div class="glass-card p-4 text-center h-100 d-flex flex-column justify-content-center align-items-center relative">

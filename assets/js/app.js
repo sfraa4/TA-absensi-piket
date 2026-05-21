@@ -139,7 +139,7 @@ document.addEventListener('click', keepFocus);
 window.addEventListener('blur', keepFocus);
 window.addEventListener('focus', keepFocus);
 
-canvas.width = 400; // default capture size
+canvas.width = 400;
 canvas.height = 300;
 initCamera();
 keepFocus();

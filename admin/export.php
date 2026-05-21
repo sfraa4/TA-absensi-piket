@@ -14,7 +14,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
-// 1. Ambil Parameter Filter
 $filter = $_GET['filter'] ?? 'today';
 $filter_piket = $_GET['piket'] ?? '';
 
@@ -39,7 +38,6 @@ if (!empty($conditions)) {
     $where_clause = "WHERE " . implode(" AND ", $conditions);
 }
 
-// 2. Tarik Data dari Database
 $stmt = $pdo->prepare("
     SELECT a.*, s.nama, s.kelas, s.hari_piket 
     FROM absensi a 
@@ -50,12 +48,10 @@ $stmt = $pdo->prepare("
 $stmt->execute();
 $attendances = $stmt->fetchAll();
 
-// 3. Inisialisasi Excel
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Rekap Absensi');
 
-// Set Header Table
 $headers = ['No', 'NISN', 'Nama Siswa', 'Kelas', 'Hari Piket', 'Tanggal', 'Jam', 'Status', 'Bukti Foto'];
 $col = 'A';
 foreach ($headers as $header) {
@@ -63,7 +59,6 @@ foreach ($headers as $header) {
     $col++;
 }
 
-// Styling Header
 $headerStyle = [
     'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
     'alignment' => [
@@ -81,7 +76,6 @@ $headerStyle = [
 $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
 $sheet->getRowDimension(1)->setRowHeight(30);
 
-// Lebar Kolom
 $sheet->getColumnDimension('A')->setWidth(5);
 $sheet->getColumnDimension('B')->setWidth(15);
 $sheet->getColumnDimension('C')->setWidth(25);
@@ -106,34 +100,29 @@ foreach ($attendances as $row) {
     $sheet->setCellValue('F' . $rowNum, $row['hari'] . ', ' . date('d/m/Y', strtotime($row['tanggal'])));
     $sheet->setCellValue('G' . $rowNum, $row['jam']);
     
-    // Default status
     $sheet->setCellValue('H' . $rowNum, 'Hadir');
 
-    // Sisipkan Foto
     $fotoPath = '../' . $row['foto'];
     if ($row['foto'] != 'archived' && file_exists($fotoPath)) {
         $drawing = new Drawing();
         $drawing->setName('Foto');
         $drawing->setDescription('Bukti Absen');
-        $drawing->setPath($fotoPath); // Path lokal
+        $drawing->setPath($fotoPath);
         
-        // Atur posisi dan ukuran
         $drawing->setCoordinates('I' . $rowNum);
-        $drawing->setHeight(80); // Tinggi gambar dalam pixels
+        $drawing->setHeight(80); 
         $drawing->setOffsetX(10);
         $drawing->setOffsetY(10);
         $drawing->setWorksheet($sheet);
         
-        $sheet->getRowDimension($rowNum)->setRowHeight(80); // Samakan tinggi baris
+        $sheet->getRowDimension($rowNum)->setRowHeight(80); 
         
-        // Tandai untuk dihapus dan diupdate db
         $archived_ids[] = $row['id'];
     } else {
         $sheet->setCellValue('I' . $rowNum, 'Tidak Ada / Diarsipkan');
         $sheet->getRowDimension($rowNum)->setRowHeight(25);
     }
     
-    // Vertical align center untuk semua cell di baris ini
     $sheet->getStyle('A'.$rowNum.':I'.$rowNum)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
     $sheet->getStyle('A'.$rowNum.':I'.$rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
     $sheet->getStyle('A'.$rowNum.':I'.$rowNum)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
@@ -142,9 +131,7 @@ foreach ($attendances as $row) {
     $no++;
 }
 
-// 4. Proses Hapus File Foto & Update DB
 if (!empty($archived_ids)) {
-    // A. Hapus file fisik (kita perlu ambil ulang lokasinya)
     $placeholders = str_repeat('?,', count($archived_ids) - 1) . '?';
     $stmtDel = $pdo->prepare("SELECT foto FROM absensi WHERE id IN ($placeholders)");
     $stmtDel->execute($archived_ids);
@@ -152,17 +139,15 @@ if (!empty($archived_ids)) {
     
     foreach ($filesToDelete as $file) {
         if ($file != 'archived' && file_exists('../' . $file)) {
-            unlink('../' . $file); // Hapus foto!
+            unlink('../' . $file); 
         }
     }
     
-    // B. Update status di DB menjadi 'archived'
     $stmtUpdate = $pdo->prepare("UPDATE absensi SET foto = 'archived' WHERE id IN ($placeholders)");
     $stmtUpdate->execute($archived_ids);
 }
 
-// 5. Output Excel ke Browser (Download)
-ob_end_clean(); // Bersihkan output buffer sebelumnya agar file tidak corrupt
+ob_end_clean();
 $filename = 'Rekap_Absensi_' . date('Ymd_His') . '.xlsx';
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
