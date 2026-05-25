@@ -12,7 +12,6 @@ foreach ($students as $s) {
     $stmt->execute($s);
 }
 
-// Add 1 dummy attendance for today
 $today = date('Y-m-d');
 $time = date('H:i:s', strtotime('-1 hour'));
 $stmt = $pdo->prepare("INSERT INTO attendances (nisn, tanggal, jam, foto) VALUES (?, ?, ?, ?)");

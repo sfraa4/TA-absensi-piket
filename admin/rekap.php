@@ -97,8 +97,8 @@ $attendances = $stmt->fetchAll();
                 ?>
                 <option value="all" <?= $filter == 'all' ? 'selected' : '' ?>>Semua Waktu</option>
             </select>
-            <a href="export.php?filter=<?= $filter ?>&piket=<?= $filter_piket ?>" class="btn btn-sm btn-success text-white text-nowrap" onclick="return confirm('PENTING: Export ke Excel akan MENGHAPUS file foto fisik dari server untuk menghemat penyimpanan. Lanjutkan?')">
-                <i class="bi bi-file-earmark-excel"></i> Export
+            <a href="export.php?filter=<?= $filter ?>&piket=<?= $filter_piket ?>" class="btn btn-sm btn-outline-primary text-nowrap" onclick="return confirm('PENTING: Export Manual ini akan MENGHAPUS foto fisik yang di-export dari server. Lanjutkan?')">
+                <i class="bi bi-file-earmark-arrow-down"></i> Export Manual
             </a>
         </form>
     </div>

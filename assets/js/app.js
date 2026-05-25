@@ -13,6 +13,17 @@ const resKelas = document.getElementById('res_kelas');
 const resJam = document.getElementById('res_jam');
 
 let isProcessing = false;
+let modelsLoaded = false;
+
+// Load Face API Models
+Promise.all([
+    faceapi.nets.ssdMobilenetv1.loadFromUri('assets/models')
+]).then(() => {
+    modelsLoaded = true;
+    console.log("Face API Models loaded.");
+}).catch(err => {
+    console.error("Error loading models:", err);
+});
 
 // Initialize Webcam
 async function initCamera() {
@@ -30,6 +41,8 @@ async function initCamera() {
         });
     }
 }
+
+
 
 // Keep focus on RFID input
 function keepFocus() {
@@ -57,13 +70,47 @@ rfidInput.addEventListener('keydown', function(e) {
 async function processAttendance(uid) {
     isProcessing = true;
     
-    // Capture photo
-    context.save();
-    context.scale(-1, 1);
-    context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-    const imageData = canvas.toDataURL('image/jpeg', 0.8);
-    
+    // Tampilkan loading cepat
+    document.querySelector('#idle_state h2').textContent = 'Memproses...';
+    document.querySelector('#idle_state .spinner-grow').classList.remove('d-none');
+        
     try {
+        if (!modelsLoaded) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Harap Tunggu',
+                text: 'Sistem sedang memuat modul AI kamera...',
+                timer: 2000,
+                showConfirmButton: false,
+                background: '#1e293b',
+                color: '#f8fafc'
+            });
+            resetUI();
+            return;
+        }
+
+        // Detect Face
+        const detection = await faceapi.detectSingleFace(video);
+        if (!detection) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Wajah Tidak Terdeteksi',
+                text: 'Pastikan kamera tidak tertutup dan wajah Anda terlihat jelas!',
+                timer: 3000,
+                showConfirmButton: false,
+                background: '#1e293b',
+                color: '#f8fafc'
+            });
+            resetUI();
+            return;
+        }
+
+        // Capture photo
+        context.save();
+        context.scale(-1, 1);
+        context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        
         const formData = new FormData();
         formData.append('uid', uid);
         formData.append('image', imageData);
@@ -87,8 +134,8 @@ async function processAttendance(uid) {
 
             Swal.fire({
                 icon: 'success',
-                title: 'Berhasil!',
-                text: 'Absensi telah dicatat.',
+                title: 'Absensi Berhasil!',
+                text: 'Terima kasih, ' + result.data.nama,
                 timer: 2000,
                 showConfirmButton: false,
                 background: '#1e293b',
@@ -132,6 +179,8 @@ function resetUI() {
     isProcessing = false;
     successState.classList.add('d-none');
     idleState.classList.remove('d-none');
+    document.querySelector('#idle_state h2').textContent = 'tempelkan kartu anda';
+    document.querySelector('#idle_state .spinner-grow').classList.remove('d-none');
     keepFocus();
 }
 

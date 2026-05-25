@@ -65,7 +65,6 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
         <div class="table-responsive">
             <table class="table table-hover table-striped datatable">
                 <thead class="table-light">
-                    <tr>
                         <th>NISN</th>
                         <th>Nama</th>
                         <th>Kelas</th>
