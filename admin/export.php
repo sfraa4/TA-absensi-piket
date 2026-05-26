@@ -52,7 +52,7 @@ $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Rekap Absensi');
 
-$headers = ['No', 'NISN', 'Nama Siswa', 'Kelas', 'Hari Piket', 'Tanggal', 'Jam', 'Status', 'Bukti Foto'];
+$headers = ['NISN', 'Nama Siswa', 'Kelas', 'Hari Piket', 'Tanggal Tapping', 'Jam Tapping', 'Bukti Foto'];
 $col = 'A';
 foreach ($headers as $header) {
     $sheet->setCellValue($col . '1', $header);
@@ -73,43 +73,37 @@ $headerStyle = [
         'startColor' => ['argb' => 'FF0D6EFD']
     ]
 ];
-$sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
+$sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
 $sheet->getRowDimension(1)->setRowHeight(30);
 
-$sheet->getColumnDimension('A')->setWidth(5);
-$sheet->getColumnDimension('B')->setWidth(15);
-$sheet->getColumnDimension('C')->setWidth(25);
-$sheet->getColumnDimension('D')->setWidth(10);
-$sheet->getColumnDimension('E')->setWidth(15);
-$sheet->getColumnDimension('F')->setWidth(20);
-$sheet->getColumnDimension('G')->setWidth(15);
-$sheet->getColumnDimension('H')->setWidth(15);
-$sheet->getColumnDimension('I')->setWidth(20); // Kolom Foto
+$sheet->getColumnDimension('A')->setWidth(15);
+$sheet->getColumnDimension('B')->setWidth(25);
+$sheet->getColumnDimension('C')->setWidth(10);
+$sheet->getColumnDimension('D')->setWidth(15);
+$sheet->getColumnDimension('E')->setWidth(20);
+$sheet->getColumnDimension('F')->setWidth(15);
+$sheet->getColumnDimension('G')->setWidth(20); // Kolom Foto
 
 $rowNum = 2;
-$no = 1;
 
 $archived_ids = [];
 
 foreach ($attendances as $row) {
-    $sheet->setCellValue('A' . $rowNum, $no);
-    $sheet->setCellValue('B' . $rowNum, $row['nisn']);
-    $sheet->setCellValue('C' . $rowNum, $row['nama']);
-    $sheet->setCellValue('D' . $rowNum, $row['kelas']);
-    $sheet->setCellValue('E' . $rowNum, $row['hari_piket'] ?: '-');
-    $sheet->setCellValue('F' . $rowNum, $row['hari'] . ', ' . date('d/m/Y', strtotime($row['tanggal'])));
-    $sheet->setCellValue('G' . $rowNum, $row['jam']);
-    
-    $sheet->setCellValue('H' . $rowNum, 'Hadir');
+    $sheet->setCellValue('A' . $rowNum, $row['nisn']);
+    $sheet->setCellValue('B' . $rowNum, $row['nama']);
+    $sheet->setCellValue('C' . $rowNum, $row['kelas']);
+    $sheet->setCellValue('D' . $rowNum, $row['hari_piket'] ?: '-');
+    $sheet->setCellValue('E' . $rowNum, substr($row['hari'], 0, 3) . ', ' . date('d/m/y', strtotime($row['tanggal'])));
+    $sheet->setCellValue('F' . $rowNum, substr($row['jam'], 0, 5));
 
-    $fotoPath = '../' . $row['foto'];
-    if ($row['foto'] != 'archived' && file_exists($fotoPath)) {
+    $fotoPath = realpath(__DIR__ . '/../' . ltrim($row['foto'], '/'));
+    if ($row['foto'] != 'archived' && $fotoPath && file_exists($fotoPath)) {
         $drawing = new Drawing();
         $drawing->setName('Foto');
         $drawing->setDescription('Bukti Absen');
         $drawing->setPath($fotoPath);
         
-        $drawing->setCoordinates('I' . $rowNum);
+        $drawing->setCoordinates('G' . $rowNum);
         $drawing->setHeight(80); 
         $drawing->setOffsetX(10);
         $drawing->setOffsetY(10);
@@ -119,17 +113,27 @@ foreach ($attendances as $row) {
         
         $archived_ids[] = $row['id'];
     } else {
-        $sheet->setCellValue('I' . $rowNum, 'Tidak Ada / Diarsipkan');
+        $sheet->setCellValue('G' . $rowNum, 'Tidak Ada / Diarsipkan');
         $sheet->getRowDimension($rowNum)->setRowHeight(25);
     }
     
-    $sheet->getStyle('A'.$rowNum.':I'.$rowNum)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-    $sheet->getStyle('A'.$rowNum.':I'.$rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-    $sheet->getStyle('A'.$rowNum.':I'.$rowNum)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+    $sheet->getStyle('A'.$rowNum.':G'.$rowNum)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+    $sheet->getStyle('A'.$rowNum.':G'.$rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle('A'.$rowNum.':G'.$rowNum)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
     $rowNum++;
-    $no++;
 }
+
+// (deletion logic moved below)
+
+ob_end_clean();
+$filename = 'Rekap_Absensi_' . date('Ymd_His') . '.xlsx';
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment;filename="' . $filename . '"');
+header('Cache-Control: max-age=0');
+
+$writer = new Xlsx($spreadsheet);
+$writer->save('php://output');
 
 if (!empty($archived_ids)) {
     $placeholders = str_repeat('?,', count($archived_ids) - 1) . '?';
@@ -147,13 +151,5 @@ if (!empty($archived_ids)) {
     $stmtUpdate->execute($archived_ids);
 }
 
-ob_end_clean();
-$filename = 'Rekap_Absensi_' . date('Ymd_His') . '.xlsx';
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="' . $filename . '"');
-header('Cache-Control: max-age=0');
-
-$writer = new Xlsx($spreadsheet);
-$writer->save('php://output');
 exit;
 ?>
