@@ -81,13 +81,14 @@ video {
     background: var(--bg-color);
     box-shadow: 0 0 10px var(--box-color);
     animation: scan 2s linear infinite;
+    will-change: transform, opacity;
 }
 
 @keyframes scan {
-    0% { top: 0; opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { top: 100%; opacity: 0; }
+    0% { transform: translateY(0); opacity: 0; }
+    10% { transform: translateY(30px); opacity: 1; }
+    90% { transform: translateY(270px); opacity: 1; }
+    100% { transform: translateY(300px); opacity: 0; }
 }
 
 .decor-circle {

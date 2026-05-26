@@ -3,6 +3,13 @@ require_once 'header.php';
 
 if (isset($_GET['delete'])) {
     $nisn = $_GET['delete'];
+    $stmt = $pdo->prepare("SELECT foto_profil FROM siswa WHERE nisn = ?");
+    $stmt->execute([$nisn]);
+    $student = $stmt->fetch();
+    if ($student && $student['foto_profil'] && file_exists("../uploads/profil/" . $student['foto_profil'])) {
+        unlink("../uploads/profil/" . $student['foto_profil']);
+    }
+
     $stmt = $pdo->prepare("DELETE FROM siswa WHERE nisn = ?");
     if($stmt->execute([$nisn])){
         $_SESSION['msg'] = "Data siswa berhasil dihapus!";
@@ -20,14 +27,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $action = $_POST['action'];
     $old_nisn = $_POST['old_nisn'] ?? '';
 
+    $foto_profil = null;
+    $upload_dir = '../uploads/profil/';
+    
+    // Handle File Upload
+    if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] == 0) {
+        $ext = pathinfo($_FILES['foto_profil']['name'], PATHINFO_EXTENSION);
+        $foto_profil = $nisn . '_' . time() . '.' . $ext;
+        move_uploaded_file($_FILES['foto_profil']['tmp_name'], $upload_dir . $foto_profil);
+    }
+
     try {
         if ($action == 'add') {
-            $stmt = $pdo->prepare("INSERT INTO siswa (nisn, nama, kelas, hari_piket, rfid_uid) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$nisn, $nama, $kelas, $hari_piket, $rfid_uid]);
+            $stmt = $pdo->prepare("INSERT INTO siswa (nisn, nama, kelas, hari_piket, rfid_uid, foto_profil) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$nisn, $nama, $kelas, $hari_piket, $rfid_uid, $foto_profil]);
             $_SESSION['msg'] = "Siswa berhasil ditambahkan!";
         } elseif ($action == 'edit') {
-            $stmt = $pdo->prepare("UPDATE siswa SET nisn=?, nama=?, kelas=?, hari_piket=?, rfid_uid=? WHERE nisn=?");
-            $stmt->execute([$nisn, $nama, $kelas, $hari_piket, $rfid_uid, $old_nisn]);
+            if ($foto_profil) {
+                // Delete old photo
+                $stmt = $pdo->prepare("SELECT foto_profil FROM siswa WHERE nisn = ?");
+                $stmt->execute([$old_nisn]);
+                $old = $stmt->fetch();
+                if ($old && $old['foto_profil'] && file_exists($upload_dir . $old['foto_profil'])) {
+                    unlink($upload_dir . $old['foto_profil']);
+                }
+                
+                $stmt = $pdo->prepare("UPDATE siswa SET nisn=?, nama=?, kelas=?, hari_piket=?, rfid_uid=?, foto_profil=? WHERE nisn=?");
+                $stmt->execute([$nisn, $nama, $kelas, $hari_piket, $rfid_uid, $foto_profil, $old_nisn]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE siswa SET nisn=?, nama=?, kelas=?, hari_piket=?, rfid_uid=? WHERE nisn=?");
+                $stmt->execute([$nisn, $nama, $kelas, $hari_piket, $rfid_uid, $old_nisn]);
+            }
             $_SESSION['msg'] = "Siswa berhasil diupdate!";
         }
     } catch (PDOException $e) {
@@ -66,6 +96,7 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
             <table class="table table-hover table-striped datatable">
                 <thead class="table-light">
                         <th>NISN</th>
+                        <th>Foto</th>
                         <th>Nama</th>
                         <th>Kelas</th>
                         <th>Hari Piket</th>
@@ -77,6 +108,13 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
                     <?php foreach($students as $row): ?>
                     <tr>
                         <td><?= htmlspecialchars($row['nisn']) ?></td>
+                        <td>
+                            <?php if($row['foto_profil']): ?>
+                                <img src="../uploads/profil/<?= $row['foto_profil'] ?>" alt="Profil" class="rounded-circle object-fit-cover" width="40" height="40">
+                            <?php else: ?>
+                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;"><i class="bi bi-person"></i></div>
+                            <?php endif; ?>
+                        </td>
                         <td><?= htmlspecialchars($row['nama']) ?></td>
                         <td><?= htmlspecialchars($row['kelas']) ?></td>
                         <td><?= htmlspecialchars($row['hari_piket']) ?></td>
@@ -100,7 +138,7 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
 <div class="modal fade" id="modalForm" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="modalTitle">Form Siswa</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -141,6 +179,11 @@ $students = $pdo->query("SELECT * FROM siswa ORDER BY nama ASC")->fetchAll();
                             </button>
                         </div>
                         <small class="text-muted">Fokuskan pada input dan tap kartu untuk mengisi UID otomatis.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label>Foto Acuan (Wajah)</label>
+                        <input type="file" name="foto_profil" id="formFoto" class="form-control" accept="image/*">
+                        <small class="text-muted">Kosongkan jika tidak ingin mengubah foto (saat edit).</small>
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `siswa` (
   `kelas` VARCHAR(50) NOT NULL,
   `hari_piket` VARCHAR(20) NOT NULL DEFAULT '',
   `rfid_uid` VARCHAR(100) NOT NULL,
+  `foto_profil` VARCHAR(255) DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`nisn`),
   UNIQUE KEY `rfid_uid` (`rfid_uid`)
