@@ -30,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $foto_profil = null;
     $upload_dir = '../uploads/profil/';
     
-    // Handle File Upload
     if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] == 0) {
         $ext = pathinfo($_FILES['foto_profil']['name'], PATHINFO_EXTENSION);
         $foto_profil = $nisn . '_' . time() . '.' . $ext;
@@ -44,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['msg'] = "Siswa berhasil ditambahkan!";
         } elseif ($action == 'edit') {
             if ($foto_profil) {
-                // Delete old photo
                 $stmt = $pdo->prepare("SELECT foto_profil FROM siswa WHERE nisn = ?");
                 $stmt->execute([$old_nisn]);
                 $old = $stmt->fetch();

@@ -17,7 +17,6 @@ $time = date('H:i:s', strtotime('-1 hour'));
 $stmt = $pdo->prepare("INSERT INTO attendances (nisn, tanggal, jam, foto) VALUES (?, ?, ?, ?)");
 $stmt->execute(['1234567890', $today, $time, 'uploads/attendances/dummy.jpg']);
 
-// Create a dummy image
 if (!file_exists('uploads/attendances')) {
     mkdir('uploads/attendances', 0777, true);
 }

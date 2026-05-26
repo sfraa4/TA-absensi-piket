@@ -27,7 +27,6 @@ Promise.all([
     console.error("Error loading models:", err);
 });
 
-// Initialize Webcam
 async function initCamera() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -44,14 +43,12 @@ async function initCamera() {
     }
 }
 
-// Keep focus on RFID input
 function keepFocus() {
     if (!isProcessing) {
         rfidInput.focus();
     }
 }
 
-// Handle RFID Input
 rfidInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         e.preventDefault();
